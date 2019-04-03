@@ -3,51 +3,42 @@ import acornJsx from 'acorn-jsx';
 import acornDynamicImport from 'acorn-dynamic-import';
 import classFields from 'acorn-class-fields';
 import Program from './program/Program.js';
-import { features, matrix } from './support.js';
 import getSnippet from './utils/getSnippet.js';
 
 const parser = Parser.extend(acornDynamicImport, acornJsx(), classFields);
 
+export const features = [
+	'getterSetter',
+	'arrow',
+	'classes',
+	'computedProperty',
+	'conciseMethodProperty',
+	'defaultParameter',
+	'destructuring',
+	'forOf',
+	'generator',
+	'letConst',
+	'moduleExport',
+	'moduleImport',
+	'numericLiteral',
+	'parameterDestructuring',
+	'spreadRest',
+	'stickyRegExp',
+	'templateString',
+
+	// ES2016
+	'exponentiation',
+
+	// additional transforms, not from
+	// https://featuretests.io
+	'reservedProperties',
+
+	'trailingFunctionCommas',
+	'asyncAwait',
+	'objectRestSpread'
+];
+
 const dangerousTransforms = ['dangerousTaggedTemplateString', 'dangerousForOf'];
-
-export function target(target) {
-	const targets = Object.keys(target);
-	let bitmask = targets.length
-		? 0b11111111111111111111111
-		: 0b00010000000000000000001;
-
-	Object.keys(target).forEach(environment => {
-		const versions = matrix[environment];
-		if (!versions)
-			throw new Error(
-				`Unknown environment '${environment}'. Please raise an issue at https://github.com/bublejs/buble/issues`
-			);
-
-		const targetVersion = target[environment];
-		if (!(targetVersion in versions))
-			throw new Error(
-				`Support data exists for the following versions of ${environment}: ${Object.keys(
-					versions
-				).join(
-					', '
-				)}. Please raise an issue at https://github.com/bublejs/buble/issues`
-			);
-		const support = versions[targetVersion];
-
-		bitmask &= support;
-	});
-
-	const transforms = Object.create(null);
-	features.forEach((name, i) => {
-		transforms[name] = !(bitmask & (1 << i));
-	});
-
-	dangerousTransforms.forEach(name => {
-		transforms[name] = false;
-	});
-
-	return transforms;
-}
 
 export function transform(source, options = {}) {
 	let ast;
@@ -75,7 +66,16 @@ export function transform(source, options = {}) {
 		throw err;
 	}
 
-	const transforms = target(options.target || {});
+	const transforms = Object.create(null);
+
+	features.forEach(name => {
+		transforms[name] = true
+	});
+
+	dangerousTransforms.forEach(name => {
+		transforms[name] = true;
+	});
+
 	Object.keys(options.transforms || {}).forEach(name => {
 		if (name === 'modules') {
 			if (!('moduleImport' in options.transforms))
@@ -88,8 +88,10 @@ export function transform(source, options = {}) {
 		if (!(name in transforms)) throw new Error(`Unknown transform '${name}'`);
 		transforms[name] = options.transforms[name];
 	});
-	if (options.objectAssign === true) options.objectAssign = 'Object.assign';
+
+  if (options.objectAssign === true) {
+    options.objectAssign = 'Object.assign';
+  }
+
 	return new Program(source, ast, transforms, options).export(options);
 }
-
-export { version as VERSION } from '../package.json';

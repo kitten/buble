@@ -87,33 +87,4 @@ export const matrix = {
 	}
 };
 
-export const features = [
-	'getterSetter',
-	'arrow',
-	'classes',
-	'computedProperty',
-	'conciseMethodProperty',
-	'defaultParameter',
-	'destructuring',
-	'forOf',
-	'generator',
-	'letConst',
-	'moduleExport',
-	'moduleImport',
-	'numericLiteral',
-	'parameterDestructuring',
-	'spreadRest',
-	'stickyRegExp',
-	'templateString',
 
-	// ES2016
-	'exponentiation',
-
-	// additional transforms, not from
-	// https://featuretests.io
-	'reservedProperties',
-
-	'trailingFunctionCommas',
-	'asyncAwait',
-	'objectRestSpread'
-];
