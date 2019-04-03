@@ -105,7 +105,6 @@ export const features = [
 	'spreadRest',
 	'stickyRegExp',
 	'templateString',
-	'unicodeRegExp',
 
 	// ES2016
 	'exponentiation',
